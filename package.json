@@ -9,6 +9,16 @@
   "author": "Your Name",
   "license": "ISC",
   "dependencies": {
+    "jsonwebtoken": "^9.0.2",
     "node-fetch": "^2.7.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YaminDeveloper/Pin-Verification.git"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/YaminDeveloper/Pin-Verification/issues"
+  },
+  "homepage": "https://github.com/YaminDeveloper/Pin-Verification#readme"
 }
