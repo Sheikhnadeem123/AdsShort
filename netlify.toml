@@ -1,8 +1,14 @@
+# Netlify Functions এর জন্য কনফিগারেশন
 [functions]
   directory = "netlify/functions/"
+  # esbuild একটি আধুনিক বান্ডলার যা ডিফল্টরূপে ব্যবহৃত হতে পারে
   node_bundler = "esbuild"
 
+# URL Rewrite/Redirect রুল
 [[redirects]]
-  from = "/success/*"
-  to = "/success.html"
+  # /verify/ দিয়ে শুরু হওয়া যেকোনো URL...
+  from = "/verify/*"
+  # ...verify.html ফাইলটিকে দেখাবে
+  to = "/verify.html"
+  # HTTP 200 স্ট্যাটাস দিয়ে, যাতে ব্রাউজার এটিকে রিডাইরেক্ট না ভেবে একটি সাধারণ পেজ মনে করে
   status = 200
