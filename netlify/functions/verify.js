@@ -24,6 +24,21 @@ exports.handler = async function(event) {
              throw new Error('Firebase DB URL not found in config');
         }
         
+        // --- নতুন পরিবর্তন এখানে ---
+        // প্রথমে চেক করুন ডিভাইসটি ব্লক করা আছে কিনা
+        const blockCheckUrl = `${firebaseDbUrl}/blocked_devices/${deviceId}.json`;
+        const blockCheckResponse = await fetch(blockCheckUrl);
+        const isBlocked = await blockCheckResponse.json();
+
+        // যদি isBlocked নাল না হয় (অর্থাৎ, ডেটা পাওয়া যায়), তাহলে ডিভাইসটি ব্লকড
+        if (isBlocked) {
+            return {
+                statusCode: 403, // 403 Forbidden একটি উপযুক্ত স্ট্যাটাস কোড
+                body: JSON.stringify({ error: 'Device is blocked' })
+            };
+        }
+        // --- পরিবর্তন শেষ ---
+
         const expirationTimestamp = new Date().getTime() + (verificationHours * 60 * 60 * 1000);
 
         const firebaseUrl = `${firebaseDbUrl}/verified_devices/${deviceId}.json`;
