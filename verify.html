@@ -15,8 +15,8 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="title">Confirming Your Verification...</h1>
-        <p id="status">Please wait, this will only take a moment.</p>
+        <h1 id="title">Confirming Verification...</h1>
+        <p id="status">Please wait a moment...</p>
     </div>
 
     <script>
@@ -24,13 +24,10 @@
             const statusElement = document.getElementById('status');
             const titleElement = document.getElementById('title');
 
-            // --- মূল পরিবর্তন এখানে ---
-            // URL পাথ থেকে deviceId এর পরিবর্তে টোকেন পড়ুন
-            const path = window.location.pathname; // যেমন: /verify/a_long_secure_token
+            const path = window.location.pathname;
             const pathParts = path.split('/');
             const token = pathParts[pathParts.length - 1];
 
-            // টোকেন ভ্যালিড কিনা চেক করুন
             if (!token || token === 'verify' || token.trim() === '') {
                 titleElement.innerText = '⚠️ Error';
                 statusElement.innerText = 'Invalid verification link. Please generate a new one from the app.';
@@ -39,11 +36,10 @@
             }
 
             try {
-                // Netlify ফাংশনকে টোকেনসহ কল করুন
                 const response = await fetch('/.netlify/functions/confirm-verification', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ token: token }) // deviceId এর পরিবর্তে টোকেন পাঠান
+                    body: JSON.stringify({ token: token })
                 });
 
                 if (!response.ok) {
@@ -61,15 +57,14 @@
                     throw new Error(errorMessage);
                 }
 
-                // সফল হলে UI আপডেট করুন
-                titleElement.innerText = '✅ Verification Successful!';
-                statusElement.innerHTML = 'You can now <strong>return to the app.</strong>';
-                statusElement.classList.add('success');
+                // --- মূল পরিবর্তন এখানে ---
+                // সফল হলে /success পেজে রিডাইরেক্ট করুন
+                window.location.href = "/success";
 
             } catch (error) {
                 console.error('Error:', error);
                 titleElement.innerText = '⚠️ Verification Failed';
-                statusElement.innerText = error.message; // সার্ভার থেকে পাওয়া এরর মেসেজ দেখান
+                statusElement.innerText = error.message;
                 statusElement.classList.add('error');
             }
         };
