@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // এই সিক্রেট কী-টি Netlify-এর Environment Variable-এ সেট করতে হবে
-const JWT_SECRET = process.env.JWT_SECRET || 'your-default-super-secret-key-change-it';
+const JWT_SECRET = process.env.JWT_SECRET || 'f9a3b8e2d1c7g4h6i5j2k9l1m8n4o7p3';
 
 exports.handler = async function(event) {
     // ব্রাউজার থেকে অ্যাক্সেসের জন্য CORS হেডার
