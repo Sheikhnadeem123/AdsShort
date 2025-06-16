@@ -45,7 +45,7 @@ exports.handler = async function(event) {
                 deviceId: deviceId,
                 verification_token: verification_token
             },
-            JWT_SECRET, { expiresIn: '5m' } // <-- এখানে পরিবর্তন করে ৫ মিনিট করা হয়েছে
+            JWT_SECRET, { expiresIn: '15m' } // <-- এখানে পরিবর্তন করে ৫ মিনিট করা হয়েছে
         );
 
         return {
