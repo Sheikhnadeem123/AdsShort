@@ -6,8 +6,5 @@
   "joinUsUrl": "https://t.me/YammyMods",
   "tutorialUrl": "https://www.youtube.com/watch?v=your_video_id",
   "verificationDurationHours": 48,
-  "firebaseDbUrl": "https://pin-verify-1aa88-default-rtdb.asia-southeast1.firebasedatabase.app",
-  
-  "useStaticLink": true,
-  "staticVerificationLink": "https://sfl.gl/hGkZ"
+  "firebaseDbUrl": "https://pin-verify-1aa88-default-rtdb.asia-southeast1.firebasedatabase.app"
 }
