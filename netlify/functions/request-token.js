@@ -40,12 +40,12 @@ exports.handler = async function(event) {
             };
         }
 
-        // একটি JWT টোকেন তৈরি করুন যা ৫ মিনিটের জন্য বৈধ থাকবে
+        // একটি JWT টোকেন তৈরি করুন যা 15 মিনিটের জন্য বৈধ থাকবে
         const token = jwt.sign({
                 deviceId: deviceId,
                 verification_token: verification_token
             },
-            JWT_SECRET, { expiresIn: '5m' } // <-- এখানে পরিবর্তন করে ৫ মিনিট করা হয়েছে
+            JWT_SECRET, { expiresIn: '15m' } // <-- এখানে পরিবর্তন করে ১৫ মিনিট করা হয়েছে
         );
 
         return {
