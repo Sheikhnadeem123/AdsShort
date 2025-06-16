@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 const fetch = require('node-fetch');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-default-super-secret-key-change-it';
+const JWT_SECRET = process.env.JWT_SECRET || 'f9a3b8e2d1c7g4h6i5j2k9l1m8n4o7p3';
 const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/Pin-Verification/main/config.json";
 
 exports.handler = async function(event) {
