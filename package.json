@@ -10,7 +10,8 @@
   "license": "ISC",
   "dependencies": {
     "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "firebase-admin": "^12.0.0"  // <--- Add this line
   },
   "repository": {
     "type": "git",
