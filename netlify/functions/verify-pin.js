@@ -1,15 +1,12 @@
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 
-// Firebase Admin SDK-এর জন্য আপনার Service Account Key প্রয়োজন
-// এই JSON ডেটাটি সরাসরি কোডে না রেখে Netlify Environment Variable এ রাখুন
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-// Firebase অ্যাপটি আগে থেকেই ইনিশিয়ালাইজ করা আছে কিনা তা চেক করুন
 if (!admin.apps.length) {
     admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        databaseURL: process.env.FIREBASE_DB_URL // আপনার Firebase Database URL টিও এখানে দিন
+        databaseURL: process.env.FIREBASE_DB_URL
     });
 }
 
@@ -36,9 +33,7 @@ exports.handler = async (event) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required.' }) };
         }
 
-        const JWT_SECRET = process.env.JWT_SECRET || 'YOUR_DEFAULT_SUPER_SECRET_KEY';
-        
-        // JWT ডিকোড করে ভেতরের ডেটা বের করুন
+        const JWT_SECRET = process.env.JWT_SECRET;
         const decoded = jwt.verify(token, JWT_SECRET);
         const { deviceId, verification_token } = decoded;
 
@@ -46,11 +41,11 @@ exports.handler = async (event) => {
              return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload.' }) };
         }
 
-        const verificationDurationHours = 48; // আপনার অ্যাপের কনফিগারেশন অনুযায়ী
+        // এনভায়রনমেন্ট ভেরিয়েবল থেকে সময়কাল নিন, ডিফল্ট মান 48
+        const verificationDurationHours = parseInt(process.env.VERIFICATION_HOURS, 10) || 48;
         const durationMillis = verificationDurationHours * 60 * 60 * 1000;
         const expirationTime = Date.now() + durationMillis;
 
-        // Firebase Realtime Database এ ডেটা সেভ করুন
         await admin.database().ref('verified_devices/' + deviceId).set({
             expiration: expirationTime,
             last_token: verification_token
