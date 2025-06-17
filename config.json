@@ -6,9 +6,9 @@
   
   "verification": {
     "longUrl": "https://pinverification.netlify.app/verify",
-    "useHours": true,
+    "useHours": false,
     "durationHours": 48,
-    "durationMinutes": 60
+    "durationMinutes": 5
   },
 
   "links": {
