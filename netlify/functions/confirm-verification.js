@@ -1,7 +1,9 @@
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
+const fetch = require('node-fetch');
 
 const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
+const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/Pin-Verification/main/config.json";
 
 if (!admin.apps.length) {
     admin.initializeApp({
@@ -20,7 +22,6 @@ exports.handler = async (event) => {
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
     }
-
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
@@ -40,14 +41,24 @@ exports.handler = async (event) => {
         if (!deviceId || !verification_token) {
              return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload.' }) };
         }
-
-        const verificationDurationHours = parseInt(process.env.VERIFICATION_HOURS, 10) || 48;
-        const durationMillis = verificationDurationHours * 60 * 60 * 1000;
+        
+        // Fetch config to determine duration
+        const configResponse = await fetch(CONFIG_URL);
+        const config = await configResponse.json();
+        
+        let durationMillis;
+        if (config.useHoursForVerification === true) {
+            durationMillis = (config.verificationDurationHours || 48) * 60 * 60 * 1000;
+        } else {
+            durationMillis = (config.verificationDurationMinutes || 60) * 60 * 1000;
+        }
+        
         const expirationTime = Date.now() + durationMillis;
 
         await admin.database().ref('verified_devices/' + deviceId).set({
             expiration: expirationTime,
-            last_token: verification_token
+            last_token: verification_token,
+            isPermanent: false // নতুন ভেরিফিকেশন কখনো পার্মানেন্ট হবে না
         });
 
         return {
