@@ -1,22 +1,28 @@
 {
-  "name": "pin-verification-functions",
+  "name": "pin-verification-system",
   "version": "1.0.0",
-  "description": "Netlify function for Pin Verification",
+  "description": "Backend functions for the Pin Verification system, including JWT handling and Firebase integration.",
   "main": "index.js",
   "scripts": {
+    "start": "netlify dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Your Name",
+  "author": "YaminDeveloper",
   "license": "ISC",
   "dependencies": {
-    "jsonwebtoken": "^9.0.2",
-    "node-fetch": "^2.7.0"
+    "firebase-admin": "^12.1.0",
+    "jsonwebtoken": "^9.0.2"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/YaminDeveloper/Pin-Verification.git"
   },
-  "keywords": [],
+  "keywords": [
+    "netlify",
+    "firebase",
+    "jwt",
+    "pin-verification"
+  ],
   "bugs": {
     "url": "https://github.com/YaminDeveloper/Pin-Verification/issues"
   },
