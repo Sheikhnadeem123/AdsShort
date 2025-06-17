@@ -1,13 +1,23 @@
 {
-  "dialogTitle": "YAMMY TEST",
+  "dialogTitle": "YAMMY MOD",
   "apiKey": "c13a6be54a41dc819547c7f6ce91d96242de3428",
-  "longUrl": "https://pinverification.netlify.app/verify",
   "apiDomain": "arlinks.in",
-  "joinUsUrl": "https://t.me/YammyMods",
-  "contactUrl": "https://t.me/your_contact_username",
-  "tutorialUrl": "https://www.youtube.com/watch?v=your_video_id",
-  "useHoursForVerification": false,
-  "verificationDurationHours": 48,
-  "verificationDurationMinutes": 60,
-  "firebaseDbUrl": "https://pin-verify-1aa88-default-rtdb.asia-southeast1.firebasedatabase.app"
+  "firebaseDbUrl": "https://pin-verify-1aa88-default-rtdb.asia-southeast1.firebasedatabase.app",
+  
+  "verification": {
+    "longUrl": "https://pinverification.netlify.app/verify",
+    "useHours": true,
+    "durationHours": 48,
+    "durationMinutes": 60
+  },
+
+  "links": {
+    "joinUs": "https://t.me/YammyMods",
+    "contact": "https://t.me/your_contact_username",
+    "tutorial": "https://www.youtube.com/watch?v=your_video_id"
+  },
+
+  "expireSystem": {
+    "enabled": false
+  }
 }
