@@ -1,35 +1,27 @@
-const admin = require('firebase-admin');
 const jwt = require('jsonwebtoken');
 
-// Firebase Admin SDK ইনিশিয়ালাইজেশন
-const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT_KEY);
-const databaseURL = process.env.FIREBASE_DATABASE_URL;
-
-if (admin.apps.length === 0) {
-    admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        databaseURL: databaseURL
-    });
-}
-
-// Netlify এনভায়রনমেন্ট ভেরিয়েবল থেকে JWT সিক্রেট নেওয়া হচ্ছে
-const JWT_SECRET = process.env.JWT_SECRET;
-
-exports.handler = async (event, context) => {
+exports.handler = async (event) => {
+    // হেডারগুলো সেট করা হচ্ছে যাতে সব ডোমেইন থেকে অ্যাক্সেস করা যায় (CORS)
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
+    // ব্রাউজারের preflight রিকোয়েস্ট হ্যান্ডেল করার জন্য
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
     }
     
+    // শুধুমাত্র POST রিকোয়েস্ট গ্রহণ করা হবে
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
 
+    // Netlify এনভায়রনমেন্ট ভেরিয়েবল থেকে আপনার গোপন কী (Secret Key) নেওয়া হচ্ছে
+    const JWT_SECRET = process.env.JWT_SECRET;
+
+    // JWT_SECRET সেট করা না থাকলে সার্ভারে এরর দেখানো হবে
     if (!JWT_SECRET) {
         console.error('JWT_SECRET environment variable is not set.');
         return {
@@ -40,56 +32,41 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        const { token } = JSON.parse(event.body);
+        // অ্যান্ড্রয়েড অ্যাপ থেকে পাঠানো ডাটা (deviceId, verification_token) পার্স করা হচ্ছে
+        const { deviceId, verification_token } = JSON.parse(event.body);
 
-        if (!token) {
+        // deviceId বা verification_token না থাকলে এরর দেখানো হবে
+        if (!deviceId || !verification_token) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ message: 'Token is required.' })
+                body: JSON.stringify({ error: 'Device ID and verification token are required.' })
             };
         }
 
-        let decoded;
-        try {
-            // JWT ভেরিফাই করা হচ্ছে। যদি টোকেনটি অবৈধ বা মেয়াদোত্তীর্ণ হয়, তবে এটি একটি এরর থ্রো করবে।
-            decoded = jwt.verify(token, JWT_SECRET);
-        } catch (err) {
-            return {
-                statusCode: 401,
-                headers,
-                body: JSON.stringify({ message: 'Invalid or expired token.' })
-            };
-        }
-        
-        const { deviceId, verification_token } = decoded;
+        // একটি পেলোড তৈরি করা হচ্ছে যা টোকেনের ভেতরে থাকবে
+        const payload = {
+            deviceId: deviceId,
+            verification_token: verification_token,
+            type: 'pin_verification_request'
+        };
 
-        // Firebase-এ `verified_devices` নোডে ডিভাইসটি যোগ করা হচ্ছে
-        const db = admin.database();
-        const verifiedRef = db.ref(`verified_devices/${deviceId}`);
+        // একটি নতুন JWT তৈরি করা হচ্ছে যা ১০ মিনিটের জন্য বৈধ থাকবে
+        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '10m' });
 
-        // ভেরিফিকেশনের সময়কাল (যেমন ৪৮ ঘণ্টা)
-        const verificationDurationHours = 48; // এটি আপনি কনফিগারেশন থেকে নিতে পারেন
-        const expirationTimestamp = Date.now() + verificationDurationHours * 60 * 60 * 1000;
-
-        await verifiedRef.set({
-            verified_at: Date.now(),
-            expiration: expirationTimestamp,
-            last_token: verification_token // অ্যান্ড্রয়েড অ্যাপ থেকে আসা মূল টোকেনটি সেভ করা হচ্ছে
-        });
-        
+        // সফলভাবে টোকেন তৈরি হলে সেটি অ্যান্ড্রয়েড অ্যাপে ফেরত পাঠানো হচ্ছে
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ message: `Device ${deviceId} verified successfully.` })
+            body: JSON.stringify({ token: token })
         };
 
     } catch (error) {
-        console.error('Verification failed:', error);
+        console.error('Token generation failed:', error);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ message: 'An internal error occurred during verification.' })
+            body: JSON.stringify({ error: 'Failed to generate token.' })
         };
     }
 };
