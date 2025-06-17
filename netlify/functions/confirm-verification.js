@@ -1,58 +1,74 @@
 const jwt = require('jsonwebtoken');
-const fetch = require('node-fetch');
+const admin = require('firebase-admin');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-default-super-secret-key-change-it';
-const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/Pin-Verification/main/config.json";
+// Netlify এনভায়রনমেন্ট ভেরিয়েবল থেকে সার্ভিস অ্যাকাউন্ট লোড করুন
+const serviceAccount = JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
 
-exports.handler = async function(event) {
+// Firebase অ্যাপটি আগে থেকেই ইনিশিয়ালাইজ করা আছে কিনা তা চেক করুন
+if (!admin.apps.length) {
+    admin.initializeApp({
+        credential: admin.credential.cert(serviceAccount),
+        databaseURL: process.env.FIREBASE_DB_URL
+    });
+}
+
+exports.handler = async (event) => {
+    // ব্রাউজার থেকে অ্যাক্সেসের জন্য CORS হেডার
+    const headers = {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+    };
+
+    // OPTIONS মেথড হ্যান্ডেল করার জন্য
+    if (event.httpMethod === 'OPTIONS') {
+        return { statusCode: 204, headers, body: '' };
+    }
+
+    // শুধুমাত্র POST রিকোয়েস্ট গ্রহণ করুন
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, body: 'Method Not Allowed' };
+        return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
 
     try {
-        const { token } = JSON.parse(event.body);
+        const body = JSON.parse(event.body);
+        const { token } = body;
+
         if (!token) {
-            return { statusCode: 400, body: 'Token is required' };
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required.' }) };
         }
 
-        // টোকেনটি ভেরিফাই করুন
+        // এনভায়রনমেন্ট ভেরিয়েবল থেকে JWT সিক্রেট কী নিন
+        const JWT_SECRET = process.env.JWT_SECRET;
         const decoded = jwt.verify(token, JWT_SECRET);
-        const { deviceId } = decoded;
+        const { deviceId, verification_token } = decoded;
 
-        // ---- config.json এবং Firebase লজিক ----
-        const configResponse = await fetch(CONFIG_URL);
-        const config = await configResponse.json();
-        const firebaseDbUrl = config.firebaseDbUrl;
-        const verificationHours = config.verificationDurationHours || 48;
-        
-        // ব্লকড ডিভাইস চেক
-        const blockCheckUrl = `${firebaseDbUrl}/blocked_devices/${deviceId}.json`;
-        const blockResponse = await fetch(blockCheckUrl);
-        const isBlocked = await blockResponse.json();
-        if (isBlocked) {
-            return { statusCode: 403, body: JSON.stringify({ error: 'Device is blocked' }) };
+        if (!deviceId || !verification_token) {
+             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload.' }) };
         }
 
-        // Firebase-এ ভেরিফিকেশন সেভ করুন
-        const expirationTimestamp = new Date().getTime() + (verificationHours * 60 * 60 * 1000);
-        const firebaseUrl = `${firebaseDbUrl}/verified_devices/${deviceId}.json`;
-        const firebaseResponse = await fetch(firebaseUrl, {
-            method: 'PUT',
-            body: JSON.stringify({ expiration: expirationTimestamp })
-        });
+        // এনভায়রনমেন্ট ভেরিয়েবল থেকে ভেরিফিকেশনের সময়কাল নিন
+        const verificationDurationHours = parseInt(process.env.VERIFICATION_HOURS, 10) || 48;
+        const durationMillis = verificationDurationHours * 60 * 60 * 1000;
+        const expirationTime = Date.now() + durationMillis;
 
-        if (!firebaseResponse.ok) throw new Error('Failed to save to Firebase');
+        // firebase-admin ব্যবহার করে নিরাপদে ডেটা লিখুন
+        await admin.database().ref('verified_devices/' + deviceId).set({
+            expiration: expirationTime,
+            last_token: verification_token
+        });
 
         return {
             statusCode: 200,
-            body: JSON.stringify({ message: 'Verification successful' })
+            headers,
+            body: JSON.stringify({ message: `Successfully verified device: ${deviceId}` })
         };
 
     } catch (error) {
-        // JWT-এর এরর (যেমন: মেয়াদ শেষ) আলাদাভাবে হ্যান্ডেল করুন
-        if (error.name === 'TokenExpiredError') {
-            return { statusCode: 401, body: JSON.stringify({ error: 'Token expired' }) };
-        }
-        return { statusCode: 500, body: JSON.stringify({ error: error.message }) };
+        return {
+            statusCode: 500,
+            headers,
+            body: JSON.stringify({ error: 'Verification failed: ' + error.message })
+        };
     }
 };
