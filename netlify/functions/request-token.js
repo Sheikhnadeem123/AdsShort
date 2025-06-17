@@ -8,55 +8,59 @@ exports.handler = async (event) => {
     };
 
     if (event.httpMethod === 'OPTIONS') {
-        return { statusCode: 204, headers, body: '' };
+        return {
+            statusCode: 204,
+            headers,
+            body: ''
+        };
     }
 
     if (event.httpMethod !== 'POST') {
-        return { statusCode: 405, headers, body: 'Method Not Allowed' };
-    }
-
-    const JWT_SECRET = process.env.JWT_SECRET;
-
-    if (!JWT_SECRET) {
-        console.error('JWT_SECRET environment variable is not set.');
         return {
-            statusCode: 500,
+            statusCode: 405,
             headers,
-            body: JSON.stringify({ error: 'Server configuration error.' })
+            body: 'Method Not Allowed'
         };
     }
 
     try {
-        const { deviceId, verification_token } = JSON.parse(event.body);
+        const body = JSON.parse(event.body);
+        const { deviceId, verification_token } = body;
 
         if (!deviceId || !verification_token) {
             return {
                 statusCode: 400,
                 headers,
-                body: JSON.stringify({ error: 'Device ID and verification token are required.' })
+                body: JSON.stringify({
+                    error: 'deviceId and verification_token are required.'
+                })
             };
         }
+        
+        const JWT_SECRET = process.env.JWT_SECRET || 'YOUR_DEFAULT_SUPER_SECRET_KEY';
 
-        const payload = {
+        const token = jwt.sign({
             deviceId: deviceId,
-            verification_token: verification_token,
-            type: 'pin_verification_request'
-        };
-
-        const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '10m' });
+            verification_token: verification_token
+        }, JWT_SECRET, {
+            expiresIn: '15m'
+        });
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ token: token })
+            body: JSON.stringify({
+                token: token
+            })
         };
 
     } catch (error) {
-        console.error('Token generation failed:', error);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: 'Failed to generate token.' })
+            body: JSON.stringify({
+                error: 'An error occurred while generating the token.'
+            })
         };
     }
 };
