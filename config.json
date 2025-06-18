@@ -7,8 +7,8 @@
 
   "verification": {
     "longUrl": "https://pinverification.netlify.app/verify",
-    "useHours": false,
-    "durationHours": 48,
+    "useHours": true,
+    "durationHours": 6,
     "durationMinutes": 5
   },
 
@@ -19,6 +19,6 @@
   },
 
   "expireSystem": {
-    "enabled": true
+    "enabled": false
   }
 }
