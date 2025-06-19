@@ -32,7 +32,7 @@ exports.handler = async function(event) {
         }
 
         const response = await axios.post(
-            'https://beta.publishers.adsterra.com/api/v2/direct_links', { placementId: placementId }, {
+            'https://publishers.adsterra.com/api/v2/direct_links', { placementId: placementId }, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${apiToken}`
