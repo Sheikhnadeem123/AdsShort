@@ -1,16 +1,15 @@
 const jwt = require('jsonwebtoken');
 
-
-const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5VCJ9';
+// --- এখানে টাইপোটি সংশোধন করা হয়েছে ---
+const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
 
 exports.handler = async function(event) {
     
     const headers = {
-        'Access-Control-Allow-Origin': '*',
+        'Access-control-allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
-
    
     if (event.httpMethod === 'OPTIONS') {
         return {
@@ -30,7 +29,6 @@ exports.handler = async function(event) {
 
     try {
         const { deviceId, verification_token } = JSON.parse(event.body);
-
         
         if (!deviceId || !verification_token) {
             return {
@@ -40,7 +38,6 @@ exports.handler = async function(event) {
             };
         }
 
-        
         const token = jwt.sign({
                 deviceId: deviceId,
                 verification_token: verification_token
