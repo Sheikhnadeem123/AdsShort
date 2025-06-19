@@ -2,13 +2,11 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
-const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/refs/heads/main/config.json";
-
 try {
-    const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-    const serviceAccount = JSON.parse(serviceAccountJson);
-    
     if (!admin.apps.length) {
+        const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+        const serviceAccount = JSON.parse(serviceAccountJson);
+        
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
             databaseURL: process.env.FIREBASE_DB_URL
@@ -18,12 +16,13 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
-exports.handler = async (event) => 
+exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
+
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
     }
@@ -32,12 +31,10 @@ exports.handler = async (event) =>
     }
 
     try {
-       
-        const configResponse = await fetch(CONFIG_URL);
+        const configResponse = await fetch("https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/main/config.json");
         if (!configResponse.ok) throw new Error('Failed to fetch remote config');
         const config = await configResponse.json();
 
-        
         const { token } = JSON.parse(event.body);
         if (!token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
@@ -56,18 +53,17 @@ exports.handler = async (event) =>
         
         const db = admin.database();
 
-        
         const blockSnapshot = await db.ref(`blocked_devices/${deviceId}`).once('value');
         if (blockSnapshot.exists()) {
             console.log(`Verification blocked for device: ${deviceId}`);
             return {
                 statusCode: 403, 
+                headers,
                 body: JSON.stringify({ error: 'This device has been blocked.' })
             };
         }
-
        
-        const verificationConfig = config.verification || {};
+        const verificationConfig = config.verificationSystem || {};
         const useHours = verificationConfig.useHours === true;
         let durationMillis;
 
@@ -99,6 +95,7 @@ exports.handler = async (event) =>
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
             return { 
                 statusCode: 401,
+                headers,
                 body: JSON.stringify({ error: 'Invalid or expired token.' }) 
             };
         }
@@ -107,7 +104,7 @@ exports.handler = async (event) =>
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: error.message || 'Verification failed.' })
         };
     }
 };
