@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 // --- এখানে টাইপোটি সংশোধন করা হয়েছে ---
-const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5c9';
 
 exports.handler = async function(event) {
     
