@@ -1,16 +1,11 @@
 const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
-const fetch = require('node-fetch');
 
-// রিমোট কনফিগারেশন ফাইলের URL
-const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/refs/heads/main/config.json";
-
-// Firebase Admin SDK ইনিশিয়ালাইজেশন (সবচেয়ে নিরাপদ পদ্ধতি ব্যবহার করে)
+// Firebase Admin SDK ইনিশিয়ালাইজেশন
 try {
-    const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
-    const serviceAccount = JSON.parse(serviceAccountJson);
-    
     if (!admin.apps.length) {
+        const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
+        const serviceAccount = JSON.parse(serviceAccountJson);
         admin.initializeApp({
             credential: admin.credential.cert(serviceAccount),
             databaseURL: process.env.FIREBASE_DB_URL
@@ -20,14 +15,24 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
-// এই ফাংশনটি ভেরিফিকেশন টোকেন যাচাই করে এবং সফল হলে Firebase এ ডেটা আপডেট করে
+// রিমোট কনফিগারেশন লোড করার জন্য একটি ফাংশন
+async function getRemoteConfig() {
+    // node-fetch এর আর প্রয়োজন নেই, Node.js v18+ এ fetch বিল্ট-ইন
+    const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/main/config.json";
+    const response = await fetch(CONFIG_URL);
+    if (!response.ok) {
+        throw new Error(`Failed to fetch remote config. Status: ${response.status}`);
+    }
+    return response.json();
+}
+
 exports.handler = async (event) => {
-    // CORS হেডার এবং HTTP মেথড চেক
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
+
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
     }
@@ -36,12 +41,8 @@ exports.handler = async (event) => {
     }
 
     try {
-        // --- ধাপ ১: রিমোট কনফিগারেশন ফাইল থেকে ডেটা লোড করা ---
-        const configResponse = await fetch(CONFIG_URL);
-        if (!configResponse.ok) throw new Error('Failed to fetch remote config');
-        const config = await configResponse.json();
-
-        // --- ধাপ ২: JWT টোকেন ভেরিফাই করা ---
+        const config = await getRemoteConfig();
+        
         const { token } = JSON.parse(event.body);
         if (!token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
@@ -49,29 +50,27 @@ exports.handler = async (event) => {
 
         const JWT_SECRET = process.env.JWT_SECRET;
         if (!JWT_SECRET) {
-            throw new Error('Server configuration error: JWT_SECRET is not set.');
+            throw new Error('JWT_SECRET is not configured on the server.');
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
         const { deviceId, verification_token } = decoded;
+
         if (!deviceId || !verification_token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload' }) };
         }
         
         const db = admin.database();
 
-        // --- ধাপ ৩ (নতুন): ডিভাইসটি ব্লক করা আছে কিনা তা চেক করা ---
         const blockSnapshot = await db.ref(`blocked_devices/${deviceId}`).once('value');
         if (blockSnapshot.exists()) {
-            console.log(`Verification blocked for device: ${deviceId}`);
             return {
-                statusCode: 403, // 403 Forbidden
+                statusCode: 403,
+                headers,
                 body: JSON.stringify({ error: 'This device has been blocked.' })
             };
         }
 
-        // --- ধাপ ৪: Firebase-এ ভেরিফিকেশন ডেটা সেট করা ---
-        // রিমোট কনফিগারেশন থেকে ভেরিফিকেশনের সময়কাল নির্ধারণ
         const verificationConfig = config.verification || {};
         const useHours = verificationConfig.useHours === true;
         let durationMillis;
@@ -89,7 +88,7 @@ exports.handler = async (event) => {
         await db.ref(`verified_devices/${deviceId}`).set({
             expiration: expirationTime,
             last_token: verification_token,
-            isPermanent: false, // নতুন ভেরিফিকেশন কখনো পার্মানেন্ট হবে না
+            isPermanent: false,
             verified_at: new Date().toISOString()
         });
 
@@ -100,10 +99,10 @@ exports.handler = async (event) => {
         };
 
     } catch (error) {
-        // --- নতুন: আরও ভালো এরর হ্যান্ডলিং ---
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
             return { 
-                statusCode: 401, // 401 Unauthorized
+                statusCode: 401,
+                headers,
                 body: JSON.stringify({ error: 'Invalid or expired token.' }) 
             };
         }
@@ -112,7 +111,7 @@ exports.handler = async (event) => {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: error.message || 'An internal server error occurred.' })
         };
     }
 };
