@@ -10,6 +10,11 @@
   # Netlify ফাংশন বান্ডেল করার জন্য esbuild ব্যবহার করবে, যা দ্রুততর
   node_bundler = "esbuild"
 
+[[redirects]]
+  from = "/adloader/*"
+  to = "/ad-loader.html"
+  status = 200
+  
 # ----- নতুন এই অংশটি যোগ করুন -----
 [[redirects]]
   # /adsterra/যেকোনো-টোকেন লিঙ্কে গেলে adsterra-verify.html পেজ দেখাবে
