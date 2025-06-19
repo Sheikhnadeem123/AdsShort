@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Complete Verification</title>
+    <style>
+        /* আপনার পছন্দ মতো স্টাইল দিন */
+        body { font-family: sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; background: #f0f0f0; text-align: center; }
+        .container { padding: 20px; background: white; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+        button { background: #28a745; color: white; border: none; padding: 15px 30px; font-size: 18px; border-radius: 5px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        #message { margin-top: 20px; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Please Wait</h1>
+        <p>Please complete the ad task to continue.</p>
+        <button id="verifyBtn">Click Here After Completing Ad Task</button>
+        <div id="message"></div>
+    </div>
+
+    <script>
+        // Adsterra ডিরেক্ট লিংক
+        const adLink = "https://syrupplod.com/mpjy0juwn?key=8021699e3efbf35a743bdc80703dc5eb";
+        
+        // পেজ লোড হওয়ার সাথে সাথে নতুন ট্যাবে বা পপ-আপে বিজ্ঞাপন খুলুন
+        window.onload = () => {
+            window.open(adLink, '_blank');
+        };
+
+        const verifyBtn = document.getElementById('verifyBtn');
+        const messageDiv = document.getElementById('message');
+
+        verifyBtn.addEventListener('click', async () => {
+            verifyBtn.disabled = true;
+            verifyBtn.textContent = 'Verifying...';
+
+            // URL থেকে JWT টোকেনটি নিন
+            const token = window.location.pathname.split('/').pop();
+
+            if (!token) {
+                messageDiv.textContent = 'Error: Verification token not found.';
+                messageDiv.style.color = 'red';
+                return;
+            }
+
+            try {
+                // আপনার আগের বানানো ভেরিফিকেশন ফাংশনকে কল করুন
+                const response = await fetch('https://YOUR-NETLIFY-FUNCTION-URL/verify-device', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: token })
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    messageDiv.textContent = 'Verification Successful! You can now return to the app.';
+                    messageDiv.style.color = 'green';
+                    verifyBtn.style.display = 'none';
+                } else {
+                    throw new Error(result.error || 'Verification failed.');
+                }
+            } catch (error) {
+                messageDiv.textContent = `Error: ${error.message}`;
+                messageDiv.style.color = 'red';
+                verifyBtn.disabled = false;
+                verifyBtn.textContent = 'Retry Verification';
+            }
+        });
+    </script>
+</body>
+</html>
