@@ -1,5 +1,5 @@
 {
-  "name": "pin-verification-system",
+  "name": "AdsVerification-system",
   "version": "1.0.0",
   "description": "Backend functions for the Pin Verification system, including JWT handling and Firebase integration.",
   "main": "index.js",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YaminDeveloper/Pin-Verification.git"
+    "url": "git+https://github.com/YaminDeveloper/AdsVerification.git"
   },
   "keywords": [
     "netlify",
@@ -24,7 +24,7 @@
     "pin-verification"
   ],
   "bugs": {
-    "url": "https://github.com/YaminDeveloper/Pin-Verification/issues"
+    "url": "https://github.com/YaminDeveloper/AdsVerification/issues"
   },
-  "homepage": "https://github.com/YaminDeveloper/Pin-Verification#readme"
+  "homepage": "https://github.com/YaminDeveloper/AdsVerification#readme"
 }
