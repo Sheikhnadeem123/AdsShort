@@ -8,37 +8,30 @@ exports.handler = async function(event) {
     };
 
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 204,
-            headers,
-            body: ''
-        };
+        return { statusCode: 204, headers, body: '' };
     }
-
     if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers,
-            body: 'Method Not Allowed'
-        };
+        return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
 
     try {
         const apiToken = process.env.ADSTERRA_API_TOKEN;
-        const placementId = 26857271;
+        const placementId = 26857271; // আপনার placementId
 
         if (!apiToken) {
             throw new Error('Adsterra API token is not configured.');
         }
 
-        const response = await axios.post(
-            'https://publishers.adsterra.com/api/v2/direct_links', { placementId: placementId }, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiToken}`
-                }
+        // *** মূল পরিবর্তনটি এখানে ***
+        // placementId এখন URL-এর অংশ এবং রিকোয়েস্টের কোনো body নেই।
+        const apiUrl = `https://publishers.adsterra.com/api/v2/direct_links/${placementId}`;
+        
+        // রিকোয়েস্টটি POST, কিন্তু কোনো body নেই (null)
+        const response = await axios.post(apiUrl, null, {
+            headers: {
+                'Authorization': `Bearer ${apiToken}`
             }
-        );
+        });
 
         const directLink = response.data.url;
 
@@ -49,7 +42,10 @@ exports.handler = async function(event) {
         };
 
     } catch (error) {
-        console.error('Adsterra API Error:', error.response ? error.response.data : error.message);
+        // এরর লগ করার জন্য এই অংশটি খুবই গুরুত্বপূর্ণ
+        const errorMessage = error.response ? JSON.stringify(error.response.data) : error.message;
+        console.error('Adsterra API Error:', errorMessage);
+        
         return {
             statusCode: 500,
             headers,
