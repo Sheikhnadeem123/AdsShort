@@ -1,17 +1,12 @@
-const jwt = require('jsonwebtoken');
-
-// এই সিক্রেট কী-টি Netlify-এর Environment Variable-এ সেট করতে হবে
-const JWT_SECRET = process.env.JWT_SECRET || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+const axios = require('axios');
 
 exports.handler = async function(event) {
-    // ব্রাউজার থেকে অ্যাক্সেসের জন্য CORS হেডার
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
-    // OPTIONS মেথড হ্যান্ডেল করার জন্য
     if (event.httpMethod === 'OPTIONS') {
         return {
             statusCode: 204,
@@ -29,36 +24,36 @@ exports.handler = async function(event) {
     }
 
     try {
-        const { deviceId, verification_token } = JSON.parse(event.body);
+        const apiToken = process.env.ADSTERRA_API_TOKEN;
+        const placementId = 26857271;
 
-        // deviceId এবং verification_token দুটোই আছে কিনা তা চেক করুন
-        if (!deviceId || !verification_token) {
-            return {
-                statusCode: 400,
-                headers,
-                body: JSON.stringify({ error: 'Device ID and verification token are required.' })
-            };
+        if (!apiToken) {
+            throw new Error('Adsterra API token is not configured.');
         }
 
-        // একটি JWT টোকেন তৈরি করুন যা ৫ মিনিটের জন্য বৈধ থাকবে
-        const token = jwt.sign({
-                deviceId: deviceId,
-                verification_token: verification_token
-            },
-            JWT_SECRET, { expiresIn: '5m' } // <-- এখানে পরিবর্তন করে ৫ মিনিট করা হয়েছে
+        const response = await axios.post(
+            'https://beta.publishers.adsterra.com/api/v2/direct_links', { placementId: placementId }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiToken}`
+                }
+            }
         );
+
+        const directLink = response.data.url;
 
         return {
             statusCode: 200,
             headers,
-            body: JSON.stringify({ token: token })
+            body: JSON.stringify({ token: directLink })
         };
 
     } catch (error) {
+        console.error('Adsterra API Error:', error.response ? error.response.data : error.message);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: 'Failed to fetch link from Adsterra.' })
         };
     }
 };
