@@ -69,8 +69,8 @@
     </div>
 
     <script>
-        // আপনার ভেরিফিকেশন ফাংশনের সম্পূর্ণ URL
-        const verificationApiUrl = "https://adsverification.netlify.app/.netlify/functions/confirm-verification";
+        // *** এখানে নতুন ফাংশনের নাম ব্যবহার করা হয়েছে ***
+        const verificationApiUrl = "/.netlify/functions/confirm-verification";
 
         const verifyBtn = document.getElementById('verifyBtn');
         const messageDiv = document.getElementById('message');
@@ -79,7 +79,6 @@
             verifyBtn.disabled = true;
             verifyBtn.textContent = 'Verifying...';
 
-            // URL পাথ থেকে JWT টোকেনটি বের করুন
             const pathParts = window.location.pathname.split('/');
             const token = pathParts[pathParts.length - 1];
 
@@ -92,22 +91,33 @@
             }
 
             try {
-                // আপনার Netlify ভেরিফিকেশন ফাংশনে POST রিকোয়েস্ট পাঠান
                 const response = await fetch(verificationApiUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ token: token })
                 });
 
+                if (!response.ok) {
+                    let errorResult;
+                    try {
+                        errorResult = await response.json();
+                    } catch (e) {
+                        throw new Error(`Server responded with status: ${response.status}`);
+                    }
+                    throw new Error(errorResult.error || 'Verification failed.');
+                }
+
                 const result = await response.json();
 
-                if (response.ok) {
-                    messageDiv.textContent = 'Verification Successful! You can now return to the app.';
-                    messageDiv.style.color = 'green';
-                    verifyBtn.style.display = 'none'; // সফল হলে বাটনটি লুকিয়ে দিন
-                } else {
-                    throw new Error(result.error || 'Verification failed. Please try again.');
-                }
+                messageDiv.textContent = 'Verification Successful! Redirecting...';
+                messageDiv.style.color = 'green';
+                verifyBtn.style.display = 'none';
+
+                // সফল হওয়ার ২ সেকেন্ড পর রিডাইরেক্ট করুন
+                setTimeout(() => {
+                    window.location.href = "/success";
+                }, 2000);
+
             } catch (error) {
                 messageDiv.textContent = `Error: ${error.message}`;
                 messageDiv.style.color = 'red';
