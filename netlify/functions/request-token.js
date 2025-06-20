@@ -1,7 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-
-const JWT_SECRET = process.env.JWT_SECRET || '01dadd1f40573ba1fa984cd';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.handler = async function(event) {
     
@@ -11,27 +10,21 @@ exports.handler = async function(event) {
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
 
-   
     if (event.httpMethod === 'OPTIONS') {
-        return {
-            statusCode: 204,
-            headers,
-            body: ''
-        };
+        return { statusCode: 204, headers, body: '' };
     }
 
     if (event.httpMethod !== 'POST') {
-        return {
-            statusCode: 405,
-            headers,
-            body: 'Method Not Allowed'
-        };
+        return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
 
     try {
+        if (!JWT_SECRET) {
+            throw new Error('Server configuration error: JWT_SECRET is not set.');
+        }
+
         const { deviceId, verification_token } = JSON.parse(event.body);
 
-        
         if (!deviceId || !verification_token) {
             return {
                 statusCode: 400,
@@ -40,12 +33,11 @@ exports.handler = async function(event) {
             };
         }
 
-        
         const token = jwt.sign({
                 deviceId: deviceId,
                 verification_token: verification_token
             },
-            JWT_SECRET, { expiresIn: '5m' } 
+            JWT_SECRET, { expiresIn: '30m' } 
         );
 
         return {
@@ -55,10 +47,11 @@ exports.handler = async function(event) {
         };
 
     } catch (error) {
+        console.error("Token Generation Error:", error.message);
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: 'An internal server error occurred.' })
         };
     }
 };
