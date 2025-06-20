@@ -8,7 +8,7 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; text-align: center; padding: 20px; }
         .container { background-color: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
         h1 { color: #1c1e21; }
-        p { color: #606770; }
+        p { color: #606770; font-size: 1.1em; }
         .success { color: #28a745; font-weight: bold; }
         .error { color: #dc3545; font-weight: bold; }
     </style>
@@ -24,11 +24,12 @@
             const statusElement = document.getElementById('status');
             const titleElement = document.getElementById('title');
 
-            const path = window.location.pathname;
-            const pathParts = path.split('/');
-            const token = pathParts[pathParts.length - 1];
+            // --- সঠিক পদ্ধতি: Query Parameter থেকে টোকেন বের করা ---
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            // --------------------------------------------------------
 
-            if (!token || token === 'verify' || token.trim() === '') {
+            if (!token) {
                 titleElement.innerText = '⚠️ Error';
                 statusElement.innerText = 'Invalid verification link. Please generate a new one from the app.';
                 statusElement.classList.add('error');
@@ -43,22 +44,21 @@
                 });
 
                 if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
+                    const errorData = await response.json().catch(() => ({ error: 'An unknown server error occurred.' }));
                     let errorMessage = 'Verification failed. Please try again.';
                     
-                    if (response.status === 403) {
-                         errorMessage = 'Your device has been blocked.';
-                    } else if (response.status === 401) {
-                         errorMessage = 'This verification link has expired. Please generate a new one from the app.';
+                    // আপনার দেওয়া কাস্টম এরর মেসেজ দেখানোর লজিক
+                    if (response.status === 401) {
+                        errorMessage = 'This verification link has expired. Please generate a new one from the app.';
                     } else if (errorData && errorData.error) {
-                         errorMessage = errorData.error;
+                        errorMessage = errorData.error;
                     }
                     
                     throw new Error(errorMessage);
                 }
 
-                
-                window.location.href = "/success";
+                // সফল হলে success পেজে রিডাইরেক্ট করা
+                window.location.href = "/success.html";
 
             } catch (error) {
                 console.error('Error:', error);
