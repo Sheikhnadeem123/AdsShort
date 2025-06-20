@@ -16,7 +16,8 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R';
+// --- সরাসরি কী ব্যবহার করুন ---
+const JWT_SECRET = 'Y4mMy_M0dS-S3cReT-kEy_f0R';
 
 exports.handler = async (event) => {
     const headers = {
@@ -42,8 +43,7 @@ exports.handler = async (event) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
         }
 
-        // --- এখানে clockTolerance যোগ করা হয়েছে ---
-        const decoded = jwt.verify(token, JWT_SECRET, { clockTolerance: 10 }); // 10 সেকেন্ড পর্যন্ত সময়ের পার্থক্য গ্রহণ করবে
+        const decoded = jwt.verify(token, JWT_SECRET, { clockTolerance: 10 });
         
         const { deviceId, verification_token } = decoded;
         if (!deviceId || !verification_token) {
