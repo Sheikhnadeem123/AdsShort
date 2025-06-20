@@ -18,26 +18,26 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
-exports.handler = async (event) => 
+exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
+
     if (event.httpMethod === 'OPTIONS') {
         return { statusCode: 204, headers, body: '' };
     }
+
     if (event.httpMethod !== 'POST') {
         return { statusCode: 405, headers, body: 'Method Not Allowed' };
     }
 
     try {
-       
         const configResponse = await fetch(CONFIG_URL);
         if (!configResponse.ok) throw new Error('Failed to fetch remote config');
         const config = await configResponse.json();
 
-        
         const { token } = JSON.parse(event.body);
         if (!token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
@@ -56,17 +56,15 @@ exports.handler = async (event) =>
         
         const db = admin.database();
 
-        
         const blockSnapshot = await db.ref(`blocked_devices/${deviceId}`).once('value');
         if (blockSnapshot.exists()) {
             console.log(`Verification blocked for device: ${deviceId}`);
             return {
-                statusCode: 403, 
+                statusCode: 403,
                 body: JSON.stringify({ error: 'This device has been blocked.' })
             };
         }
 
-       
         const verificationConfig = config.verification || {};
         const useHours = verificationConfig.useHours === true;
         let durationMillis;
@@ -84,7 +82,7 @@ exports.handler = async (event) =>
         await db.ref(`verified_devices/${deviceId}`).set({
             expiration: expirationTime,
             last_token: verification_token,
-            isPermanent: false, 
+            isPermanent: false,
             verified_at: new Date().toISOString()
         });
 
@@ -95,11 +93,10 @@ exports.handler = async (event) =>
         };
 
     } catch (error) {
-       
         if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
-            return { 
+            return {
                 statusCode: 401,
-                body: JSON.stringify({ error: 'Invalid or expired token.' }) 
+                body: JSON.stringify({ error: 'Invalid or expired token.' })
             };
         }
         
