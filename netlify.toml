@@ -22,6 +22,11 @@
   to = "/adsterra-verify.html"
   status = 200
 
+  [[redirects]]
+  from = "/loader/*"
+  to = "/loader.html"
+  status = 200
+
 # Rule for the main verification flow (linkSystem)
 [[redirects]]
   from = "/verify/*"
