@@ -1,51 +1,43 @@
-# netlify.toml
-
 # ==================================
-# ফাংশন সম্পর্কিত সাধারণ সেটিংস
+# Functions Configuration
 # ==================================
 [functions]
-  # আপনার ফাংশন ফাইলগুলো এই ডিরেক্টরিতে আছে
   directory = "netlify/functions/"
-  
-  # Netlify ফাংশন বান্ডেল করার জন্য esbuild ব্যবহার করবে, যা দ্রুততর
   node_bundler = "esbuild"
-  
-# ----- নতুন এই অংশটি যোগ করুন -----
+
+# ==================================
+# Scheduled Cleanup Function
+# Runs every day at midnight UTC
+# ==================================
+[functions.cleanup-database]
+  schedule = "0 0 * * *"
+
+# ==================================
+# Redirect and Rewrite Rules
+# ==================================
+
+# Rule for the Adsterra verification flow
 [[redirects]]
-  # /adsterra/যেকোনো-টোকেন লিঙ্কে গেলে adsterra-verify.html পেজ দেখাবে
   from = "/adsterra/*"
   to = "/adsterra-verify.html"
   status = 200
-# --------------------------------
 
-# ==================================
-# একটি নির্দিষ্ট ফাংশন শিডিউল করার জন্য
-# ==================================
-[functions.cleanup-database]
-    # এই CRON এক্সপ্রেশনটি ফাংশনটিকে প্রতিদিন রাত ১২টা UTC-তে চালাবে।
-    # আপনি আপনার প্রয়োজন মতো এটি পরিবর্তন করতে পারেন।
-    schedule = "0 0 * * *"
-
-
-# ==================================
-# সাইটের রিডাইরেক্ট এবং রিরাইট রুলস
-# ==================================
+# Rule for the main verification flow (linkSystem)
 [[redirects]]
-  # /verify/যেকোনো-টোকেন লিঙ্কে গেলে verify.html পেজ দেখাবে
-  # এটি আপনার ভেরিফিকেশন পেজকে রাউট করার জন্য ব্যবহৃত হচ্ছে
   from = "/verify/*"
   to = "/verify.html"
   status = 200
 
+# Redirect to a success page or external link after verification
 [[redirects]]
   # ভেরিফিকেশন সফল হলে /success লিঙ্কে রিডাইরেক্ট করা হবে
   from = "/success"
   to = "/success.html"
   status = 200
 
+# Catch-all rule for 404 Not Found page
+# This must be the last rule
 [[redirects]]
-  # অন্য যেকোনো লিঙ্কে গেলে কাস্টম 404 পেজ দেখাবে
-  # এটি অবশ্যই সবার শেষে রাখতে হবে
   from = "/*"
   to = "/404.html"
   status = 404
