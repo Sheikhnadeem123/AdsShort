@@ -16,6 +16,8 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
+const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R-jWt!@2024';
+
 exports.handler = async (event) => {
     const headers = {
         'Access-Control-Allow-Origin': '*',
@@ -38,11 +40,6 @@ exports.handler = async (event) => {
         const { token } = JSON.parse(event.body);
         if (!token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
-        }
-
-        const JWT_SECRET = process.env.JWT_SECRET;
-        if (!JWT_SECRET) {
-            throw new Error('Server configuration error: JWT_SECRET is not set.');
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
