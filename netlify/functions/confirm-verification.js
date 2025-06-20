@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
-const CONFIG_URL = "https://raw.githubusercontent.com/RaselDev699/RaselDevConfig/refs/heads/main/config.json";
+const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/refs/heads/main/config.json";
 
 try {
     const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
