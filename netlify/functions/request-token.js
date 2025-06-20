@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken');
 
-// --- সরাসরি কী ব্যবহার করুন ---
-const JWT_SECRET = 'Y4mMy_M0dS-S3cReT-kEy_f0R';
+
+const JWT_SECRET = process.env.JWT_SECRET || '01dadd1f40573ba1739fa984cd';
 
 exports.handler = async function(event) {
     
@@ -10,6 +10,7 @@ exports.handler = async function(event) {
         'Access-Control-Allow-Headers': 'Content-Type',
         'Access-Control-Allow-Methods': 'POST, OPTIONS'
     };
+
    
     if (event.httpMethod === 'OPTIONS') {
         return {
@@ -29,6 +30,7 @@ exports.handler = async function(event) {
 
     try {
         const { deviceId, verification_token } = JSON.parse(event.body);
+
         
         if (!deviceId || !verification_token) {
             return {
@@ -38,11 +40,12 @@ exports.handler = async function(event) {
             };
         }
 
+        
         const token = jwt.sign({
                 deviceId: deviceId,
                 verification_token: verification_token
             },
-            JWT_SECRET, { expiresIn: '15m' } 
+            JWT_SECRET, { expiresIn: '5m' } 
         );
 
         return {
