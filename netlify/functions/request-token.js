@@ -18,7 +18,7 @@ exports.handler = async function(event) {
         const token = jwt.sign(
             { deviceId: deviceId, verification_token: verification_token },
             JWT_SECRET,
-            { expiresIn: '5m' } 
+            { expiresIn: '30m' } 
         );
         return { statusCode: 200, headers, body: JSON.stringify({ token: token }) };
     } catch (error) {
