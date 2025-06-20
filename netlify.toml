@@ -18,7 +18,7 @@
 
 # Rule for the Adsterra verification flow
 [[redirects]]
-  from = "/verify-adsterra"
+  from = "/adsterra"
   to = "/adsterra-page.html"
   status = 200
 
