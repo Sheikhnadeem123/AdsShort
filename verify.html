@@ -32,9 +32,9 @@
             const pathParts = path.split('/');
             const token = pathParts[pathParts.length - 1];
 
-            if (!token || token === 'verify' || token.trim() === '') {
+            if (!token || token.trim() === '' || pathParts[pathParts.length - 2] !== 'verify') {
                 titleElement.innerText = '⚠️ Error';
-                statusElement.innerText = 'Invalid verification link. Please generate a new one from the app.';
+                statusElement.innerText = 'Invalid verification link.';
                 statusElement.classList.add('error');
                 loaderElement.style.display = 'none';
                 return;
@@ -49,26 +49,14 @@
 
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ error: 'An unknown error occurred.' }));
-                    let errorMessage = 'Verification failed. Please try again.';
-                    
-                    if (response.status === 403) {
-                         errorMessage = 'Your device has been blocked.';
-                    } else if (response.status === 401) {
-                         errorMessage = 'This verification link has expired. Please generate a new one from the app.';
-                    } else if (errorData && errorData.error) {
-                         errorMessage = errorData.error;
-                    }
-                    
-                    throw new Error(errorMessage);
+                    throw new Error(errorData.error || 'Verification failed.');
                 }
                 
-                // --- সফল হওয়ার পর UI আপডেট করুন ---
                 titleElement.innerText = '✅ Verification Successful';
                 statusElement.innerText = 'You will be redirected shortly...';
                 statusElement.classList.add('success');
                 loaderElement.style.display = 'none';
 
-                // --- ২ সেকেন্ড পর /success পেজে রিডাইরেক্ট করুন ---
                 setTimeout(() => {
                     window.location.href = "/success";
                 }, 2000);
