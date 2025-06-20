@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R-jWt!@2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R-jWt';
 
 exports.handler = async function(event) {
     
