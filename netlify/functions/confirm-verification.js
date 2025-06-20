@@ -16,7 +16,7 @@ try {
     console.error('Firebase Admin Initialization Error:', e);
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R-jWt!@2024';
+const JWT_SECRET = process.env.JWT_SECRET || 'Y4mMy_M0dS-S3cReT-kEy_f0R';
 
 exports.handler = async (event) => {
     const headers = {
