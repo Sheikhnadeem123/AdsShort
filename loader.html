@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Verification...</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; background-color: #f0f2f5; text-align: center; }
+        .card { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 30px rgba(0,0,0,0.1); }
+        .timer { font-size: 48px; font-weight: bold; margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>Please Complete Ad Task</h1>
+        <p>An ad has been opened. You will be redirected automatically after the timer ends.</p>
+        <div id="timer" class="timer">10</div>
+    </div>
+
+    <script>
+        const adLink = "https://go.arlinks.in/QsBOpO"; // এখানে আপনার arlinks.in লিংকটি দিন
+        const verificationPagePath = "/verify/";
+
+        window.onload = () => {
+            window.open(adLink, '_blank');
+            startCountdown();
+        };
+
+        function startCountdown() {
+            let count = 10;
+            const timerElement = document.getElementById('timer');
+            timerElement.textContent = count;
+
+            const interval = setInterval(() => {
+                count--;
+                timerElement.textContent = count;
+                if (count <= 0) {
+                    clearInterval(interval);
+                    redirectToVerification();
+                }
+            }, 1000);
+        }
+
+        function redirectToVerification() {
+            const pathParts = window.location.pathname.split('/');
+            const token = pathParts[pathParts.length - 1];
+
+            if (token && pathParts[pathParts.length - 2] === 'loader') {
+                window.location.href = verificationPagePath + token;
+            } else {
+                document.querySelector('.card').innerHTML = '<h1>Error</h1><p>Token not found. Please try again from app.</p>';
+            }
+        }
+    </script>
+</body>
+</html>
