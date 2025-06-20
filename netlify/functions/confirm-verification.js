@@ -42,7 +42,9 @@ exports.handler = async (event) => {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Token is required' }) };
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET);
+        // --- এখানে clockTolerance যোগ করা হয়েছে ---
+        const decoded = jwt.verify(token, JWT_SECRET, { clockTolerance: 10 }); // 10 সেকেন্ড পর্যন্ত সময়ের পার্থক্য গ্রহণ করবে
+        
         const { deviceId, verification_token } = decoded;
         if (!deviceId || !verification_token) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload' }) };
@@ -93,7 +95,7 @@ exports.handler = async (event) => {
             return { 
                 statusCode: 401,
                 headers,
-                body: JSON.stringify({ error: 'Invalid or expired token.' }) 
+                body: JSON.stringify({ error: 'This verification link has expired.' }) 
             };
         }
         
