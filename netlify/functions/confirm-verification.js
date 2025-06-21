@@ -2,7 +2,7 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
-const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsVerificationConfig/main/config.json";
+const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsShortJson/refs/heads/main/config.json";
 
 try {
     if (!admin.apps.length) {
