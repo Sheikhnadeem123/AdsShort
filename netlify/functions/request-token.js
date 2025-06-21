@@ -38,7 +38,7 @@ exports.handler = async function(event) {
         const token = jwt.sign(
             { deviceId: deviceId },
             JWT_SECRET,
-            { expiresIn: '5m' } // টোকেনটি ৫ মিনিট কার্যকর থাকবে
+            { expiresIn: '10m' } // টোকেনটি ৫ মিনিট কার্যকর থাকবে
         );
         // ===============================================
 
