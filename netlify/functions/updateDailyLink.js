@@ -8,7 +8,7 @@ exports.handler = async function(event, context) {
     try {
         // ধাপ ১: একটি সিস্টেম-জেনারেটেড টোকেন অনুরোধ করুন
         // এখানে deviceId হার্ডকোড করা যেতে পারে কারণ এটি সিস্টেম জেনারেটেড
-        const tokenResponse = await fetch('https://glistening-baklava-ddbab7.netlify.app/.netlify/functions/request-token', {
+        const tokenResponse = await fetch('https://adsshort.netlify.app/.netlify/functions/request-token', {
             method: 'POST',
             body: JSON.stringify({
                 deviceId: 'SYSTEM_DAILY_JOB',
@@ -19,7 +19,7 @@ exports.handler = async function(event, context) {
         const { token } = await tokenResponse.json();
 
         // ধাপ ২: সম্পূর্ণ ভেরিফিকেশন URL তৈরি করুন
-        const longUrl = `https://glistening-baklava-ddbab7.netlify.app/verify/${token}`;
+        const longUrl = `https://adsshort.netlify.app/verify/${token}`;
         
         // এখানে আপনি চাইলে URL Shortener API ব্যবহার করতে পারেন
         // const shortUrl = await shortenUrl(longUrl);
