@@ -34,11 +34,6 @@ exports.handler = async (event) => {
         }
 
         const decoded = jwt.verify(token, JWT_SECRET);
-        
-        // ===============================================
-        // === এই অংশটি আপডেট করা হয়েছে ===
-        // ===============================================
-        // এখন শুধু deviceId ডিকোড করা হচ্ছে
         const { deviceId } = decoded;
 
         if (!deviceId) {
@@ -52,7 +47,6 @@ exports.handler = async (event) => {
             return { statusCode: 403, headers, body: JSON.stringify({ error: 'This device has been blocked.' }) };
         }
 
-        // রিমোট কনফিগারেশন থেকে ভেরিফিকেশনের সময়কাল নেওয়া হচ্ছে
         const configResponse = await fetch(CONFIG_URL);
         if (!configResponse.ok) throw new Error('Failed to fetch remote config');
         const config = await configResponse.json();
@@ -61,13 +55,10 @@ exports.handler = async (event) => {
         let durationMillis = (useHours ? (verificationConfig.durationHours || 48) : (verificationConfig.durationMinutes || 60)) * (useHours ? 3600000 : 60000);
         const expirationTime = Date.now() + durationMillis;
 
-        // Firebase-এ সম্পূর্ণ টোকেনটি সেভ করা হচ্ছে
         await db.ref(`verified_devices/${deviceId}`).set({
             expiration: expirationTime,
-            last_token: token, // অ্যান্ড্রয়েড অ্যাপ এই টোকেনটিই মেলাবে
             verified_at: new Date().toISOString()
         });
-        // ===============================================
 
         return { statusCode: 200, headers, body: JSON.stringify({ message: `Successfully verified device: ${deviceId}` }) };
 
