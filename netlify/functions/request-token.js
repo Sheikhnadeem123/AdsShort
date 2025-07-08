@@ -1,6 +1,5 @@
 const jwt = require('jsonwebtoken');
 
-// আপনার Netlify প্রজেক্টের Environment Variables-এ JWT_SECRET সেট করতে ভুলবেন না
 const JWT_SECRET = process.env.JWT_SECRET;
 
 exports.handler = async function(event) {
@@ -24,23 +23,16 @@ exports.handler = async function(event) {
             return { statusCode: 500, headers, body: JSON.stringify({ error: 'Server configuration error.' }) };
         }
 
-        // ===============================================
-        // === এই অংশটি আপডেট করা হয়েছে ===
-        // ===============================================
-        // এখন শুধু deviceId গ্রহণ করা হচ্ছে
         const { deviceId } = JSON.parse(event.body);
 
         if (!deviceId) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Device ID is required.' }) };
         }
 
-        // JWT টোকেন শুধুমাত্র deviceId দিয়ে তৈরি করা হচ্ছে
         const token = jwt.sign(
             { deviceId: deviceId },
-            JWT_SECRET,
-            { expiresIn: '10m' } // টোকেনটি ৫ মিনিট কার্যকর থাকবে
+            JWT_SECRET
         );
-        // ===============================================
 
         return { statusCode: 200, headers, body: JSON.stringify({ token: token }) };
 
