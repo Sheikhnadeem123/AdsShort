@@ -11,7 +11,9 @@
 # ==================================
 [functions.cleanup-database]
   schedule = "0 0 * * *"
-
+  
+[functions]
+  schedule = "@daily" # প্রতিদিন একবার চালানোর জন্য
 # ==================================
 # Redirect and Rewrite Rules
 # ==================================
