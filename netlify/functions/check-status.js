@@ -1,6 +1,5 @@
 const admin = require('firebase-admin');
 
-// Firebase Admin SDK ইনিশিয়ালাইজেশন
 try {
     if (!admin.apps.length) {
         const serviceAccountJson = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT_BASE64, 'base64').toString('utf8');
@@ -37,10 +36,8 @@ exports.handler = async (event) => {
 
         const db = admin.database();
 
-        // ধাপ ১: ডিভাইসটি ব্লক করা আছে কি না চেক করুন
         const blockSnapshot = await db.ref(`blocked_devices/${deviceId}`).once('value');
         if (blockSnapshot.exists()) {
-            // যদি ব্লক করা থাকে, সাথে সাথে "DEVICE_BLOCKED" নির্দেশ পাঠান
             return {
                 statusCode: 200,
                 headers,
@@ -48,14 +45,21 @@ exports.handler = async (event) => {
             };
         }
 
-        // ধাপ ২: ডিভাইসটি ভেরিফাইড কি না এবং মেয়াদ আছে কি না চেক করুন
+        const expiredSnapshot = await db.ref(`expired_users/${deviceId}`).once('value');
+        if (expiredSnapshot.exists()) {
+             return { 
+                 statusCode: 200, 
+                 headers, 
+                 body: JSON.stringify({ action: 'SHOW_EXPIRED_UI', message: "Your access has expired."}) 
+            };
+        }
+
         const verifiedSnapshot = await db.ref(`verified_devices/${deviceId}`).once('value');
         if (verifiedSnapshot.exists()) {
             const verificationData = verifiedSnapshot.val();
             const expirationTime = verificationData.expiration || 0;
 
             if (expirationTime > Date.now()) {
-                // যদি ভেরিফাইড থাকে এবং মেয়াদ শেষ না হয়, তাহলে "GRANT_ACCESS" নির্দেশ পাঠান
                 return {
                     statusCode: 200,
                     headers,
@@ -64,7 +68,6 @@ exports.handler = async (event) => {
             }
         }
         
-        // ধাপ ৩: যদি ব্লক করা না থাকে এবং ভেরিফাইডও না থাকে, তাহলে ডায়ালগ দেখানোর নির্দেশ পাঠান
         return {
             statusCode: 200,
             headers,
@@ -73,8 +76,6 @@ exports.handler = async (event) => {
 
     } catch (error) {
         console.error('Check Status Function Error:', error.message);
-        // কোনো অপ্রত্যাশিত ত্রুটি ঘটলে, ডিফল্টভাবে ডায়ালগ দেখানোর নির্দেশ দিন
-        // এটি অ্যাপটিকে ক্র্যাশ করা থেকে বাঁচাবে
         return {
             statusCode: 500,
             headers,
