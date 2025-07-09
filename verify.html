@@ -24,10 +24,10 @@
             const statusElement = document.getElementById('status');
             const titleElement = document.getElementById('title');
 
-            const urlParams = new URLSearchParams(window.location.search);
-            const token = urlParams.get('token');
+            const path = window.location.pathname;
+            const token = path.substring(path.lastIndexOf('/') + 1);
 
-            if (!token) {
+            if (!token || token.trim() === '' || path.endsWith('/verify')) {
                 titleElement.innerText = '⚠️ Error';
                 statusElement.innerText = 'Invalid verification link. Please generate a new one from the app.';
                 statusElement.classList.add('error');
@@ -35,7 +35,6 @@
             }
 
             try {
-                // আপনার Netlify ফাংশনের সঠিক ঠিকানা
                 const response = await fetch('/.netlify/functions/confirm-verification', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
