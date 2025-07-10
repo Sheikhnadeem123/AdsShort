@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
+// আপনার GitHub কনফিগারেশন URL
 const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsShortJson/refs/heads/main/config.json";
 
 try {
@@ -49,14 +50,19 @@ exports.handler = async (event) => {
             throw new Error('Server configuration error: JWT_SECRET is not set.');
         }
 
+        // --- পরিবর্তন শুরু ---
         const decoded = jwt.verify(token, JWT_SECRET);
-        const { deviceId, verification_token } = decoded;
-        if (!deviceId || !verification_token) {
-            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload' }) };
+        
+        // শুধুমাত্র deviceId নিন, verification_token লাগবে না
+        const { deviceId } = decoded; 
+        
+        // শুধুমাত্র deviceId চেক করুন
+        if (!deviceId) {
+            return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload. Device ID is missing.' }) };
         }
+        // --- পরিবর্তন শেষ ---
         
         const db = admin.database();
-
        
         const blockSnapshot = await db.ref(`blocked_devices/${deviceId}`).once('value');
         if (blockSnapshot.exists()) {
@@ -82,12 +88,14 @@ exports.handler = async (event) => {
         
         const expirationTime = Date.now() + durationMillis;
 
+        // --- পরিবর্তন শুরু ---
+        // Firebase-এ ডেটা সেভ করার সময় last_token সরিয়ে দিন
         await db.ref(`verified_devices/${deviceId}`).set({
             expiration: expirationTime,
-            last_token: verification_token,
             isPermanent: false,
             verified_at: new Date().toISOString()
         });
+        // --- পরিবর্তন শেষ ---
 
         return {
             statusCode: 200,
@@ -108,7 +116,7 @@ exports.handler = async (event) => {
         return {
             statusCode: 500,
             headers,
-            body: JSON.stringify({ error: error.message })
+            body: JSON.stringify({ error: 'An internal server error occurred. Please contact support.' })
         };
     }
 };
