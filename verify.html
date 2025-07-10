@@ -200,7 +200,7 @@
             const errorIcon = document.getElementById('error-icon');
 
             // Referral protection check
-            const allowedReferrers = ['https://go.arlinks.in']; // Replace with your exact allowed referrer domain(s)
+            const allowedReferrers = ['https://go.arlinks.in', 'https://arlinks.in']; // Replace with your exact allowed referrer domain(s)
             const referrer = document.referrer;
 
             if (!allowedReferrers.some(domain => referrer.startsWith(domain))) {
