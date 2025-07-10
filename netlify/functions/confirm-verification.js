@@ -2,7 +2,6 @@ const jwt = require('jsonwebtoken');
 const admin = require('firebase-admin');
 const fetch = require('node-fetch');
 
-// আপনার GitHub কনফিগারেশন URL
 const CONFIG_URL = "https://raw.githubusercontent.com/YaminDeveloper/AdsShortJson/refs/heads/main/config.json";
 
 try {
@@ -50,17 +49,17 @@ exports.handler = async (event) => {
             throw new Error('Server configuration error: JWT_SECRET is not set.');
         }
 
-        // --- পরিবর্তন শুরু ---
+      
         const decoded = jwt.verify(token, JWT_SECRET);
         
-        // শুধুমাত্র deviceId নিন, verification_token লাগবে না
+       
         const { deviceId } = decoded; 
         
-        // শুধুমাত্র deviceId চেক করুন
+       
         if (!deviceId) {
             return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid token payload. Device ID is missing.' }) };
         }
-        // --- পরিবর্তন শেষ ---
+        
         
         const db = admin.database();
        
@@ -88,14 +87,13 @@ exports.handler = async (event) => {
         
         const expirationTime = Date.now() + durationMillis;
 
-        // --- পরিবর্তন শুরু ---
-        // Firebase-এ ডেটা সেভ করার সময় last_token সরিয়ে দিন
+       
         await db.ref(`verified_devices/${deviceId}`).set({
             expiration: expirationTime,
             isPermanent: false,
             verified_at: new Date().toISOString()
         });
-        // --- পরিবর্তন শেষ ---
+        
 
         return {
             statusCode: 200,
