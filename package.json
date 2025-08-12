@@ -7,7 +7,7 @@
     "start": "netlify dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "YaminDeveloper",
+  "author": "Sheikhnadeem123",
   "license": "ISC",
   "dependencies": {
     "firebase-admin": "^12.1.0",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/YaminDeveloper/AdsShort.git"
+    "url": "git+https://github.com/Sheikhnadeem123/AdsShort.git"
   },
   "keywords": [
     "netlify",
@@ -24,7 +24,7 @@
     "pin-verification"
   ],
   "bugs": {
-    "url": "https://github.com/YaminDeveloper/AdsShort/issues"
+    "url": "https://github.com/Sheikhnadeem123/AdsShort/issues"
   },
-  "homepage": "https://github.com/YaminDeveloper/AdsShort#readme"
+  "homepage": "https://github.com/Sheikhnadeem123/AdsShort#readme"
 }
